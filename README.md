@@ -5,28 +5,28 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![](https://www.r-pkg.org/badges/version/fracture?color=brightgreen)](https://cran.r-project.org/package=fracture)
+[![](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
 [![License:
 MIT](https://img.shields.io/badge/license-MIT-blueviolet.svg)](https://cran.r-project.org/web/licenses/MIT)
 [![R build
 status](https://github.com/rossellhayes/fracture/workflows/R-CMD-check/badge.svg)](https://github.com/rossellhayes/fracture/actions)
 [![](https://codecov.io/gh/rossellhayes/fracture/branch/master/graph/badge.svg)](https://codecov.io/gh/rossellhayes/fracture)
-
+[![Dependencies](https://tinyverse.netlify.com/badge/fracture)](https://cran.r-project.org/package=fracture)
 <!-- badges: end -->
 
 Convert decimals to fractions in R
 
 ## Installation
 
-<!-- You can install the released version of **fracture** from [CRAN](https://CRAN.R-project.org) with: -->
+You can install the released version of **fracture** from
+[CRAN](https://cran.r-project.org/package=fracture) with:
 
-<!-- ``` {r eval = FALSE} -->
+``` r
+install.packages("fracture")
+```
 
-<!-- install.packages("fracture") -->
-
-<!-- ``` -->
-
-You can install the development version of **fracture** from
+or the development version from
 [GitHub](https://github.com/rossellhayes/fracture) with:
 
 ``` r
@@ -121,6 +121,17 @@ fracture(0.25) + fracture(1/6)
 #> [1] 5/12
 ```
 
+### Stylish `fracture`s
+
+`frac_style()` uses Unicode to provide stylish formatting for inline
+fractions.
+
+``` r
+`r frac_style(pi, mixed = TRUE, max_denom = 500)`
+```
+
+3 ¹⁶/₁₁₃
+
 ### Just a fun example
 
 Use **fracture** to find the best approximations of π for each maximum
@@ -132,38 +143,40 @@ unique(purrr::map_chr(1:50000, ~ fracture(pi, max_denom = .x)))
 #> [6] "104348/33215"
 ```
 
-Isn’t is interesting that there’s such a wide gap between
-![](http://www.sciweavers.org/tex2img.php?eq=%5Cfrac%7B355%7D%7B113%7D&bc=white&fc=black&im=jpg&fs=8&ff=arev)
-and
-![](http://www.sciweavers.org/tex2img.php?eq=%5Cfrac%7B103993%7D%7B33102%7D&bc=white&fc=black&im=jpg&fs=8&ff=arev)?
+Isn’t is interesting that there’s such a wide gap between ³⁵⁵/₁₁₃ and
+¹⁰³⁹⁹³/₃₃₁₀₂?
 
 ## Advantages 🚀
 
-**fracture** is implemented using C++ with [**Rcpp**](http://rcpp.org/).
-This allows it to run faster than alternatives like
-[`MASS::fractions()`](https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/fractions.html)
-written in R.
+**fracture** is implemented using optimized C++ with
+[**Rcpp**](http://rcpp.org/) and S3 methods. This allows it to run
+faster than alternatives like
+[`MASS::fractions()`](https://cran.r-project.org/package=MASS) or
+[`fractional::fractional()`](https://cran.r-project.org/package=fractional).\*
 
 ``` r
-x <- round(runif(1e5, 1, 1e5)) / round(runif(1e5, 1, 1e5))
-
 # Performance with a single value
-bench::mark(fracture(x[1]), MASS::fractions(x[1]), check = FALSE)
-#> # A tibble: 2 x 6
-#>   expression                 min   median `itr/sec` mem_alloc `gc/sec`
-#>   <bch:expr>            <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 fracture(x[1])          41.2us   55.4us    17193.    2.49KB     21.7
-#> 2 MASS::fractions(x[1])   83.7us  128.7us     7380.  286.98KB     33.3
+single_benchmark
+#> # A tibble: 3 x 6
+#>   expression                            min median `itr/sec` mem_alloc `gc/sec`
+#>   <bch:expr>                          <dbl>  <dbl>     <dbl>     <dbl>    <dbl>
+#> 1 print(fracture(x[1]))                1      1         2.39       1       1.33
+#> 2 print(MASS::fractions(x[1]))         2.14   2.47      1         26.4     1.98
+#> 3 print(fractional::fractional(x[1]))  1.55   1.53      1.60      18.3     1
 
-# Performace with a large vector
-bench::mark(fracture(x), MASS::fractions(x), check = FALSE)
-#> Warning: Some expressions had a GC in every iteration; so filtering is disabled.
-#> # A tibble: 2 x 6
-#>   expression              min   median `itr/sec` mem_alloc `gc/sec`
-#>   <bch:expr>         <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 fracture(x)           503ms    503ms      1.99    28.1MB     5.97
-#> 2 MASS::fractions(x)    561ms    561ms      1.78   276.8MB    16.0
+# Performance with a vector of length 1000
+vector_benchmark
+#> # A tibble: 3 x 6
+#>   expression                         min median `itr/sec` mem_alloc `gc/sec`
+#>   <bch:expr>                       <dbl>  <dbl>     <dbl>     <dbl>    <dbl>
+#> 1 print(fracture(x))                1      1         1.78      1        1   
+#> 2 print(MASS::fractions(x))         2.18   1.52      1.18      7.24     2.17
+#> 3 print(fractional::fractional(x))  2.77   1.94      1         1.85     2.21
 ```
+
+\* `fractional()` does not compute a decimal’s fractional equivalent
+until it is printed. Therefore, benchmarking the time to print provides
+a fairer test of the three packages’ capabilities.
 
 -----
 

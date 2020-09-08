@@ -7,6 +7,8 @@ expect_comparable <- function(object, expected, ...) {
 test_that("scalar fracture()", {
   expect_comparable(fracture(0.5), "1/2")
   expect_comparable(as.fracture(0.5), "1/2")
+  expect_comparable(fracture(355/113), "355/113")
+  expect_comparable(as.fracture(355/113), "355/113")
 })
 
 test_that("big fracture()", {
@@ -28,6 +30,47 @@ test_that("vector fracture()", {
   expect_comparable(as.fracture(c(0.5, 0.75, 2/3)), c("1/2", "3/4", "2/3"))
 })
 
+test_that("long vector fracture()", {
+  withr::local_options(list(scipen = 1000))
+
+  x <- expand.grid(
+    c(1:100, sample(100:1e7, 100)), c(1:100, sample(100:1e7, 100))
+  )
+
+  test_decimal  <- x[, 1] / x[, 2]
+  unique        <- match(unique(test_decimal), test_decimal)
+  test_decimal  <- test_decimal[unique]
+
+  x   <- x[unique, ]
+  gcd <- apply(x, 1, frac_gcd)
+  x   <- x / gcd
+
+  test_fraction <- paste(x[, 1], x[, 2], sep = "/")
+
+  expect_comparable(fracture(test_decimal), test_fraction)
+})
+
+test_that("really long vector fracture()", {
+  skip_on_cran()
+  withr::local_options(list(scipen = 1000))
+
+  x <- expand.grid(
+    c(1:1000, sample(1000:1e7, 1000)), c(1:1000, sample(1000:1e7, 1000))
+  )
+
+  test_decimal  <- x[, 1] / x[, 2]
+  unique        <- match(unique(test_decimal), test_decimal)
+  test_decimal  <- test_decimal[unique]
+
+  x   <- x[unique, ]
+  gcd <- apply(x, 1, frac_gcd)
+  x   <- x / gcd
+
+  test_fraction <- paste(x[, 1], x[, 2], sep = "/")
+
+  expect_comparable(fracture(test_decimal), test_fraction)
+})
+
 test_that("improper fracture()", {
   expect_comparable(fracture(c(1.5, 2)), c("3/2", "2/1"))
   expect_comparable(as.fracture(c(1.5, 2)), c("3/2", "2/1"))
@@ -40,6 +83,44 @@ test_that("negative fracture()", {
 
 test_that("base_10 fracture()", {
   expect_comparable(fracture(0.5, base_10 = TRUE), "5/10")
+  expect_comparable(fracture(1307.36, base_10 = TRUE), "130736/100")
+})
+
+test_that("really long base_10 fracture()", {
+  withr::local_options(list(scipen = 1000))
+
+  x <- expand.grid(c(1:100, sample(100:1e7, 100)), 10 ^ (0:7))
+
+  test_decimal  <- x[, 1] / x[, 2]
+  unique        <- match(unique(test_decimal), test_decimal)
+  test_decimal  <- test_decimal[unique]
+
+  x   <- x[unique, ]
+  gcd <- apply(x, 1, frac_gcd)
+  x   <- x / gcd
+
+  test_fraction <- paste(x[, 1], x[, 2], sep = "/")
+
+  expect_comparable(fracture(test_decimal), test_fraction)
+})
+
+test_that("really long base_10 fracture()", {
+  skip_on_cran()
+  withr::local_options(list(scipen = 1000))
+
+  x <- expand.grid(c(1:1e4, sample(1e4:1e7, 1e4)), 10 ^ (0:7))
+
+  test_decimal  <- x[, 1] / x[, 2]
+  unique        <- match(unique(test_decimal), test_decimal)
+  test_decimal  <- test_decimal[unique]
+
+  x   <- x[unique, ]
+  gcd <- apply(x, 1, frac_gcd)
+  x   <- x / gcd
+
+  test_fraction <- paste(x[, 1], x[, 2], sep = "/")
+
+  expect_comparable(fracture(test_decimal), test_fraction)
 })
 
 test_that("common_denom fracture()", {
@@ -215,8 +296,17 @@ test_that("Ops.fracture()", {
   expect_false(is.na(fracture(0.5)))
   expect_length(fracture(0.5) + NULL, 0)
   expect_length(NULL + fracture(0.5), 0)
+
+  expect_comparable(fracture(c(0.5, 1.5)) + 1, c("3/2", "5/2"))
 })
 
 test_that("recover_fracture_args()", {
   expect_null(recover_fracture_args(0, 0))
+})
+
+test_that("fracture() errors", {
+  expect_error(fracture(NA))
+  expect_error(fracture(Inf))
+  expect_error(fracture(-Inf))
+  expect_error(fracture(c(0.5, NA, 1.5)))
 })

@@ -3,6 +3,7 @@
 \name{frac_mat}
 \alias{frac_mat}
 \alias{as.frac_mat}
+\alias{is.frac_mat}
 \title{Convert decimals to a matrix of numerators and denominators}
 \usage{
 frac_mat(
@@ -14,6 +15,8 @@ frac_mat(
 )
 
 as.frac_mat(x)
+
+is.frac_mat(x)
 }
 \arguments{
 \item{x}{A vector of decimals or, for \code{as.frac_mat()}, a character vector
@@ -37,9 +40,9 @@ If \code{FALSE}, improper fractions will be used for \code{x} values greater tha
 If \code{base_10} is \code{TRUE}, the maximum denominator will be the largest power
 of 10 less than \code{max_denom}.
 
-A \code{max_denom} greater than the square root of \link[=.Machine]{machine epsilon}
-will produce a warning because floating point rounding errors can occur
-when denominators grow too large.}
+A \code{max_denom} greater than the inverse square root of
+\link[=.Machine]{machine double epsilon} will produce a warning because floating
+point rounding errors can occur when denominators grow too large.}
 }
 \value{
 A matrix with the same number of columns as the length of \code{x} and

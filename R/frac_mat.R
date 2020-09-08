@@ -19,9 +19,9 @@
 #'   If `base_10` is `TRUE`, the maximum denominator will be the largest power
 #'   of 10 less than `max_denom`.
 #'
-#'   A `max_denom` greater than the square root of [machine epsilon][.Machine]
-#'   will produce a warning because floating point rounding errors can occur
-#'   when denominators grow too large.
+#'   A `max_denom` greater than the inverse square root of
+#'   [machine double epsilon][.Machine] will produce a warning because floating
+#'   point rounding errors can occur when denominators grow too large.
 #'
 #' @return A matrix with the same number of columns as the length of `x` and
 #'   rows for `integer`s (if `mixed` is `TRUE`), `numerator`s,
@@ -48,6 +48,10 @@ frac_mat <- function(
   integer <- ifelse(x >= 0, x %/% 1, (x %/% 1 + 1))
   integer <- ((x > 0) * 1 + (x < 0) * -1) * (abs(x) %/% 1)
   decimal <- x - integer
+
+  if (any(is.na(decimal)) || any(is.infinite(decimal))) {
+    stop("`x` must be a vector of finite numbers.")
+  }
 
   matrix <- decimal_to_fraction(decimal, base_10, max_denom)
 
@@ -98,4 +102,16 @@ as.frac_mat <- function(x) {
   } else {
     frac_mat(x)
   }
+}
+
+#' @rdname frac_mat
+#' @export
+
+is.frac_mat <- function(x) {
+  is.matrix(x) &&
+    is.numeric(x) &&
+    all(x %% 1 == 0) &&
+    nrow(x) %in% 2:3 &&
+    !is.null(rownames(x)) &&
+    all(rownames(x) %in% c("integer", "numerator", "denominator"))
 }
