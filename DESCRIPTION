@@ -1,6 +1,6 @@
 Package: fracture
 Title: Convert Decimals to Fractions
-Version: 0.1.2
+Version: 0.1.3
 Authors@R: 
     person(given = "Alexander",
            family = "Rossell Hayes",
@@ -24,13 +24,12 @@ Imports: Rcpp
 Suggests: covr, testthat, withr
 LinkingTo: Rcpp
 Encoding: UTF-8
-LazyData: true
 RoxygenNote: 7.1.1
 SystemRequirements: C++11
 NeedsCompilation: yes
-Packaged: 2020-09-07 09:00:32 UTC; Alex
+Packaged: 2021-05-25 01:15:27 UTC; Alex
 Author: Alexander Rossell Hayes [aut, cre, cph]
     (<https://orcid.org/0000-0001-9412-0457>)
 Maintainer: Alexander Rossell Hayes <alexander@rossellhayes.com>
 Repository: CRAN
-Date/Publication: 2020-09-08 12:40:14 UTC
+Date/Publication: 2021-05-25 04:40:07 UTC
