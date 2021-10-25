@@ -11,13 +11,17 @@
 #' @example examples/fracture.R
 
 fracture <- function(
-  x, base_10 = FALSE, common_denom = FALSE, mixed = FALSE, max_denom = 1e7
+  x, ..., denom = NULL,
+  base_10 = FALSE, common_denom = FALSE, mixed = FALSE, max_denom = 1e7
 ) {
+  check_dots_empty0(..., match.call = match.call())
+
   op <- options(scipen = 100)
   on.exit(options(op), add = TRUE)
 
   matrix <- frac_mat(
     x            = x,
+    denom        = denom,
     base_10      = base_10,
     common_denom = common_denom,
     mixed        = mixed,
@@ -98,7 +102,12 @@ as.integer.fracture <- function(x, ...) {
 
 print.fracture <- function(x, ...) {
   x <- as.character(x)
-  NextMethod("print", quote = FALSE)
+  NextMethod(
+    "print",
+    # Include quotes if there are any mixed fractions (e.g. "1 1/2") OR
+    # if there is a mix of fractions and integers (e.g. "1" "1/2")
+    quote = any(grepl(" ", x)) || length(unique(grepl("/", x))) > 1
+  )
 }
 
 #' @export
